@@ -1,0 +1,51 @@
+/// Inversión diaria de marketing por canal en pesos colombianos (pauta, CPA de afiliados, bonos de referidos y costos fijos de email y SEO).
+table Inversión
+	lineageTag: 6f8aa4bf-8fdb-4b8a-a7a5-82618a9b5c5c
+
+	/// Inversión de marketing en COP: pauta, CPA de afiliados, bonos de referidos y costos fijos de email y SEO.
+	measure Inversión = SUM('Inversión'[Monto invertido])
+		formatString: $#,##0
+		lineageTag: 02c9179e-b65e-40aa-90f0-7e1091864b1b
+
+	/// Costo de adquisición de cliente (CAC): inversión sobre activados por canal de primer toque. Para comparar canales con atribución multi-touch usar CAC Markov.
+	measure CAC = DIVIDE([Inversión], [Activados])
+		formatString: $#,##0
+		lineageTag: 829b15fc-bc3b-4a7a-bbd3-5cc09511278c
+
+	/// Día de la inversión.
+	column Fecha
+		dataType: dateTime
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 626eacb7-6c07-41e6-b07d-b2c47d88fcbb
+		sourceColumn: Fecha
+
+	/// Canal que recibe la inversión.
+	column Canal
+		dataType: string
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: c2fc9b0e-d36e-44c6-a632-62975fec1132
+		sourceColumn: Canal
+
+	/// Inversión del día en COP.
+	column 'Monto invertido'
+		dataType: decimal
+		isHidden
+		formatString: $#,##0
+		isAvailableInMdx: false
+		lineageTag: ae9bbded-2070-4398-b024-5e8243c5c930
+		sourceColumn: Monto invertido
+
+	partition Inversión = m
+		mode: import
+		source =
+				let
+				    Origen = Csv.Document(File.Contents(RutaMarts & "fact_inversion_diaria.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Encabezados = Table.PromoteHeaders(Origen, [PromoteAllScalars = true]),
+				    Columnas = Table.SelectColumns(Encabezados, {"fecha", "canal", "inversion_cop"}),
+				    Renombradas = Table.RenameColumns(Columnas, {{"fecha", "Fecha"}, {"canal", "Canal"}, {"inversion_cop", "Monto invertido"}}),
+				    Tipos = Table.TransformColumnTypes(Renombradas, {{"Fecha", type date}, {"Canal", type text}, {"Monto invertido", Currency.Type}}, "en-US")
+				in
+				    Tipos
+

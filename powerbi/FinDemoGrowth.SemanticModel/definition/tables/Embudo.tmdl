@@ -1,0 +1,158 @@
+/// Visitantes y su avance por etapa, agrupados por día y canal de la primera visita (cohorte de visita), dispositivo y ciudad.
+table Embudo
+	lineageTag: 20c41311-c3ae-4be7-8ec3-99dc9cf41ab5
+
+	/// Visitantes únicos, contados en la fecha y canal de su primera visita.
+	measure Visitantes = SUM('Embudo'[Número de visitantes])
+		formatString: #,##0
+		displayFolder: Etapas
+		lineageTag: 5b36c82b-55ab-433c-a96f-f38b1f612e44
+
+	/// Visitantes que crearon cuenta.
+	measure Registros = SUM('Embudo'[Número de registros])
+		formatString: #,##0
+		displayFolder: Etapas
+		lineageTag: b87299d1-491f-401e-8fca-424b117a7d82
+
+	/// Registros que completaron la verificación de identidad (KYC: Know Your Customer).
+	measure 'KYC completo' = SUM('Embudo'[Número de KYC completos])
+		formatString: #,##0
+		displayFolder: Etapas
+		lineageTag: 62663e70-c927-4925-8dac-e26503ad5620
+
+	/// Cuentas aprobadas.
+	measure Aprobados = SUM('Embudo'[Número de aprobados])
+		formatString: #,##0
+		displayFolder: Etapas
+		lineageTag: b79078ed-88c9-425e-9966-76a4ba82eb34
+
+	/// Cuentas con primer depósito: la conversión principal del negocio.
+	measure Activados = SUM('Embudo'[Número de activados])
+		formatString: #,##0
+		displayFolder: Etapas
+		lineageTag: 7db6fc34-4bbf-42b9-b53d-363716cb7606
+
+	/// Registros sobre visitantes.
+	measure 'Tasa registro' = DIVIDE([Registros], [Visitantes])
+		formatString: 0.0%
+		displayFolder: Tasas
+		lineageTag: ec277d1e-c74b-4ec0-add6-a8ddb6ce442c
+
+	/// KYC completos sobre registros; la mayor fuga del embudo.
+	measure 'Tasa KYC' = DIVIDE([KYC completo], [Registros])
+		formatString: 0.0%
+		displayFolder: Tasas
+		lineageTag: 206da00b-cc41-4798-a9ee-41db6fb60550
+
+	/// Cuentas aprobadas sobre KYC completos.
+	measure 'Tasa aprobación' = DIVIDE([Aprobados], [KYC completo])
+		formatString: 0.0%
+		displayFolder: Tasas
+		lineageTag: 07da0060-4d96-4710-9c68-dcb1cb5def60
+
+	/// Primeros depósitos sobre cuentas aprobadas; mide la calidad del lead.
+	measure 'Tasa depósito' = DIVIDE([Activados], [Aprobados])
+		formatString: 0.0%
+		displayFolder: Tasas
+		lineageTag: 0ca7bfe4-2cd1-4e50-a021-359263390250
+
+	/// Activados sobre visitantes (visita → primer depósito).
+	measure 'Conversión total' = DIVIDE([Activados], [Visitantes])
+		formatString: 0.0%
+		displayFolder: Tasas
+		lineageTag: 8dfd377e-48a1-4300-9d8a-39987bc0d07c
+
+	/// Personas que llegan a la etapa seleccionada de la tabla Etapa; para el gráfico de embudo.
+	measure 'Personas en la etapa' =
+			SWITCH(
+			    SELECTEDVALUE('Etapa'[Orden etapa]),
+			    1, [Visitantes],
+			    2, [Registros],
+			    3, [KYC completo],
+			    4, [Aprobados],
+			    5, [Activados]
+			)
+		formatString: #,##0
+		displayFolder: Etapas
+		lineageTag: 67fbb53b-1335-44d7-9da7-02af1039384a
+
+	/// Día de la primera visita.
+	column Fecha
+		dataType: dateTime
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 18321cf4-db67-4063-bb39-8797c045c304
+		sourceColumn: Fecha
+
+	/// Canal de la primera visita.
+	column Canal
+		dataType: string
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 1e5ba25e-e4f3-455e-b177-f65a46d8b5a3
+		sourceColumn: Canal
+
+	/// Dispositivo de la primera visita.
+	column Dispositivo
+		dataType: string
+		lineageTag: 63386fa0-0e74-494a-a0af-e6dd62e6cdd4
+		sourceColumn: Dispositivo
+
+	/// Ciudad de la primera visita.
+	column Ciudad
+		dataType: string
+		lineageTag: bab74d2d-7712-40e5-98b4-749a85b4e28b
+		dataCategory: City
+		sourceColumn: Ciudad
+
+	/// Visitantes únicos.
+	column 'Número de visitantes'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 0b87a226-a3ad-441b-a12e-5fc1520431de
+		sourceColumn: Número de visitantes
+
+	/// Visitantes que crearon cuenta.
+	column 'Número de registros'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 8e30cf4d-8571-429c-b499-d7a8956c48c6
+		sourceColumn: Número de registros
+
+	/// Registros que completaron la verificación de identidad.
+	column 'Número de KYC completos'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 4c0ce594-b3ae-43ee-9553-30418d381d9f
+		sourceColumn: Número de KYC completos
+
+	/// Cuentas aprobadas.
+	column 'Número de aprobados'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: c8f59ad2-b71c-45c3-9f83-e7a73b453154
+		sourceColumn: Número de aprobados
+
+	/// Cuentas con primer depósito.
+	column 'Número de activados'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 075acac2-8f1d-4f43-ae13-a0e53ac4722d
+		sourceColumn: Número de activados
+
+	partition Embudo = m
+		mode: import
+		source =
+				let
+				    Origen = Csv.Document(File.Contents(RutaMarts & "fact_embudo_diario.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Encabezados = Table.PromoteHeaders(Origen, [PromoteAllScalars = true]),
+				    Renombradas = Table.RenameColumns(Encabezados, {{"fecha", "Fecha"}, {"canal", "Canal"}, {"dispositivo", "Dispositivo"}, {"ciudad", "Ciudad"}, {"visitantes", "Número de visitantes"}, {"registros", "Número de registros"}, {"kyc_completo", "Número de KYC completos"}, {"aprobados", "Número de aprobados"}, {"activados", "Número de activados"}}),
+				    Tipos = Table.TransformColumnTypes(Renombradas, {{"Fecha", type date}, {"Canal", type text}, {"Dispositivo", type text}, {"Ciudad", type text}, {"Número de visitantes", Int64.Type}, {"Número de registros", Int64.Type}, {"Número de KYC completos", Int64.Type}, {"Número de aprobados", Int64.Type}, {"Número de activados", Int64.Type}}, "en-US")
+				in
+				    Tipos
+

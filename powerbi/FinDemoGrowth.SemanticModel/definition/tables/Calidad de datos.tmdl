@@ -1,0 +1,62 @@
+/// Controles de integridad sobre las fuentes integradas (GA4, app, HubSpot, core, pauta). Una fila por control.
+table 'Calidad de datos'
+	lineageTag: 968eda12-d8c1-43f9-adc6-4ec9733fe8d2
+
+	/// Controles en estado Alerta o Falla.
+	measure 'Controles con falla' = CALCULATE(COUNTROWS('Calidad de datos'), 'Calidad de datos'[Estado] <> "OK")
+		formatString: #,##0
+		lineageTag: 33b8b4da-aedc-4618-9fce-c3718702f39c
+
+	/// Tabla cruda evaluada.
+	column 'Tabla fuente'
+		dataType: string
+		lineageTag: 74d4719e-07fb-441a-b559-14b1b49e5aaa
+		sourceColumn: Tabla fuente
+
+	/// Regla de calidad; cada fila que la cumple cuenta como falla.
+	column Control
+		dataType: string
+		lineageTag: 4166b99b-d0fd-4e12-8f5c-f147930bbffb
+		sourceColumn: Control
+
+	/// Filas que incumplen el control.
+	column 'Filas con falla'
+		dataType: int64
+		formatString: #,##0
+		lineageTag: 47b99c15-bf95-4f83-8ca1-d6addfb19858
+		summarizeBy: none
+		sourceColumn: Filas con falla
+
+	/// Filas revisadas.
+	column 'Filas evaluadas'
+		dataType: int64
+		formatString: #,##0
+		lineageTag: 727c0275-1903-4833-8c47-1d0bff4d97d8
+		summarizeBy: none
+		sourceColumn: Filas evaluadas
+
+	/// Filas con falla sobre filas evaluadas.
+	column 'Porcentaje de falla'
+		dataType: decimal
+		formatString: 0.00%
+		lineageTag: 7297aa84-5b8e-46c0-bc2d-c7ad039e70ef
+		summarizeBy: none
+		sourceColumn: Porcentaje de falla
+
+	/// OK (0 %), Alerta (hasta 1 %) o Falla (más de 1 %).
+	column Estado
+		dataType: string
+		lineageTag: 6060e424-f120-4ef7-aad1-e28b9303eaf5
+		sourceColumn: Estado
+
+	partition 'Calidad de datos' = m
+		mode: import
+		source =
+				let
+				    Origen = Csv.Document(File.Contents(RutaMarts & "calidad_datos.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Encabezados = Table.PromoteHeaders(Origen, [PromoteAllScalars = true]),
+				    Renombradas = Table.RenameColumns(Encabezados, {{"tabla", "Tabla fuente"}, {"control", "Control"}, {"filas_con_falla", "Filas con falla"}, {"filas_evaluadas", "Filas evaluadas"}, {"pct_falla", "Porcentaje de falla"}, {"estado", "Estado"}}),
+				    Tipos = Table.TransformColumnTypes(Renombradas, {{"Tabla fuente", type text}, {"Control", type text}, {"Filas con falla", Int64.Type}, {"Filas evaluadas", Int64.Type}, {"Porcentaje de falla", Currency.Type}, {"Estado", type text}}, "en-US")
+				in
+				    Tipos
+

@@ -1,0 +1,68 @@
+/// Calendario diario del 2025-01-01 al 2026-09-30 (fecha de corte). Una fila por día.
+table Fecha
+	lineageTag: 24823c18-779d-40db-bad5-ee546ce3d5e8
+	dataCategory: Time
+
+	/// Día calendario.
+	column Fecha
+		dataType: dateTime
+		isUnique
+		isKey
+		formatString: yyyy-mm-dd
+		lineageTag: 02991634-70b1-4975-b074-1ae7a8610f5b
+		summarizeBy: none
+		sourceColumn: Fecha
+
+	/// Año calendario.
+	column Año
+		dataType: int64
+		formatString: 0
+		lineageTag: 6e7eb565-7b01-41a2-8900-fbff6a674288
+		summarizeBy: none
+		sourceColumn: Año
+
+	/// Mes 1-12; ordena la columna Mes.
+	column 'Número de mes'
+		dataType: int64
+		isHidden
+		lineageTag: 214cf776-3abf-4b34-938b-a9531568a275
+		summarizeBy: none
+		sourceColumn: Número de mes
+
+	/// Nombre corto del mes (ene, feb...).
+	column Mes
+		dataType: string
+		lineageTag: ee70eb25-2097-47c3-87d0-e2f94fb0c298
+		sourceColumn: Mes
+		sortByColumn: 'Número de mes'
+
+	/// Año y mes en formato AAAA-MM; ordena cronológicamente por texto.
+	column 'Año mes'
+		dataType: string
+		lineageTag: 216c4a1b-e49c-461a-99d7-d43dc63a1d54
+		sourceColumn: Año mes
+
+	/// Trimestre en formato AAAAQn.
+	column Trimestre
+		dataType: string
+		lineageTag: 64095233-bcf0-4204-87e4-053cd8be880b
+		sourceColumn: Trimestre
+
+	/// Verdadero si el día es sábado o domingo.
+	column 'Fin de semana'
+		dataType: boolean
+		lineageTag: 47f059b4-259e-404c-93cb-5df487a93a2a
+		sourceColumn: Fin de semana
+
+	partition Fecha = m
+		mode: import
+		source =
+				let
+				    Origen = Csv.Document(File.Contents(RutaMarts & "dim_fecha.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Encabezados = Table.PromoteHeaders(Origen, [PromoteAllScalars = true]),
+				    Columnas = Table.SelectColumns(Encabezados, {"fecha", "anio", "mes", "nombre_mes", "anio_mes", "trimestre", "es_fin_de_semana"}),
+				    Renombradas = Table.RenameColumns(Columnas, {{"fecha", "Fecha"}, {"anio", "Año"}, {"mes", "Número de mes"}, {"nombre_mes", "Mes"}, {"anio_mes", "Año mes"}, {"trimestre", "Trimestre"}, {"es_fin_de_semana", "Fin de semana"}}),
+				    Tipos = Table.TransformColumnTypes(Renombradas, {{"Fecha", type date}, {"Año", Int64.Type}, {"Número de mes", Int64.Type}, {"Mes", type text}, {"Año mes", type text}, {"Trimestre", type text}, {"Fin de semana", type logical}}, "en-US")
+				in
+				    Tipos
+

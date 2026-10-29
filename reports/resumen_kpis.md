@@ -87,8 +87,8 @@ CAC = inversión del canal / activaciones atribuidas. LTV12m = ingreso (comision
 
 | Test | Métrica | n (A/B) | Tasa A | Tasa B | Lift | p-valor | MDE | SRM p | Decisión |
 |---|---|---|---|---|---|---|---|---|---|
-| Onboarding KYC simplificado | Tasa de KYC completo | 834 / 869 | 60.9% | 65.6% | 7.7% | 0.045 | 6.6 pp | 0.40 | Implementar B |
-| Email de bienvenida personalizado | Activo en el mes 2 | 234 / 203 | 76.9% | 85.7% | 11.4% | 0.019 | 11.3 pp | 0.14 | Implementar B |
+| Onboarding KYC simplificado | Tasa de KYC completo | 834 / 869 | 60.9% | 65.6% | 7.7% | 0.045 | 6.6 pp | 0.40 | Implementar B con holdout |
+| Email de bienvenida personalizado | Activo en el mes 2 | 234 / 203 | 76.9% | 85.7% | 11.4% | 0.019 | 11.3 pp | 0.14 | Implementar B con holdout |
 
 ## Calidad de datos
 

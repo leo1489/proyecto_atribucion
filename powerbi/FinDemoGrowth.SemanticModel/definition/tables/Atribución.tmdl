@@ -1,0 +1,111 @@
+/// Activaciones atribuidas por trimestre, modelo de atribución y canal. Cada modelo reparte el mismo total de activaciones.
+table Atribución
+	lineageTag: 4aac0dc0-d69b-45c9-8308-bbe5754a6d4b
+
+	/// Activaciones atribuidas por el modelo filtrado; sin filtro de modelo suma todos los modelos, así que se usa junto a Atribución[Modelo].
+	measure 'Activaciones atribuidas' = SUM('Atribución'[Crédito de activaciones])
+		formatString: #,##0
+		lineageTag: a7675b25-f5b1-4d86-8732-883c1e544f52
+
+	/// Activaciones con el modelo de último clic (todo el crédito al último toque).
+	measure 'Activaciones último clic' = CALCULATE([Activaciones atribuidas], KEEPFILTERS('Atribución'[Modelo] = "Último clic"))
+		formatString: #,##0
+		displayFolder: Por modelo
+		lineageTag: 9aad30ac-803c-45d2-b1a8-9ca699d5ceb8
+
+	/// Activaciones con el modelo de primer clic (todo el crédito al primer toque).
+	measure 'Activaciones primer clic' = CALCULATE([Activaciones atribuidas], KEEPFILTERS('Atribución'[Modelo] = "Primer clic"))
+		formatString: #,##0
+		displayFolder: Por modelo
+		lineageTag: 89e1bd4d-e4b9-4fc9-b2ea-5c410053877b
+
+	/// Activaciones con cadena de Markov de primer orden (crédito proporcional al efecto de remoción).
+	measure 'Activaciones Markov' = CALCULATE([Activaciones atribuidas], KEEPFILTERS('Atribución'[Modelo] = "Markov"))
+		formatString: #,##0
+		displayFolder: Por modelo
+		lineageTag: 0cdb5fc2-403f-4861-8562-a5d422550ada
+
+	/// Activaciones con valor de Shapley sobre las combinaciones de canales del journey.
+	measure 'Activaciones Shapley' = CALCULATE([Activaciones atribuidas], KEEPFILTERS('Atribución'[Modelo] = "Shapley"))
+		formatString: #,##0
+		displayFolder: Por modelo
+		lineageTag: 3abc9c31-bd65-4ef2-a9d8-69037595bb16
+
+	/// Variación del crédito del canal al pasar de último clic a Markov; positivo = canal subvalorado por el último clic.
+	measure 'Cambio Markov vs último clic' =
+			VAR _ultimoClic = [Activaciones último clic]
+			RETURN DIVIDE([Activaciones Markov] - _ultimoClic, _ultimoClic)
+		formatString: +0%;-0%;0%
+		lineageTag: aa59b756-ecfa-40a0-9172-9d95da529b5d
+
+	/// Inversión sobre activaciones de último clic.
+	measure 'CAC último clic' = DIVIDE([Inversión], [Activaciones último clic])
+		formatString: $#,##0
+		displayFolder: Por modelo
+		lineageTag: 668fa245-a23c-477d-b765-98d14f00de0f
+
+	/// Inversión sobre activaciones atribuidas por Markov; CAC recomendado para planear presupuesto.
+	measure 'CAC Markov' = DIVIDE([Inversión], [Activaciones Markov])
+		formatString: $#,##0
+		displayFolder: Por modelo
+		lineageTag: 86f480dc-9637-4c37-b0ee-3ed89a2e6e77
+
+	/// Trimestre de la conversión (AAAAQn).
+	column Trimestre
+		dataType: string
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 8be8c2b4-ca7c-42ff-947a-26d09f83d9a5
+		sourceColumn: Trimestre
+
+	/// Modelo de atribución: último clic, primer clic, lineal, posicional, decaimiento temporal, Markov o Shapley.
+	column Modelo
+		dataType: string
+		lineageTag: 1a5c1a7b-9a70-41cf-b5fa-a806c18d7b1c
+		sourceColumn: Modelo
+		sortByColumn: 'Orden modelo'
+
+	/// Orden de presentación de los modelos.
+	column 'Orden modelo'
+		dataType: int64
+		isHidden
+		lineageTag: 3a0e9090-659f-458a-be75-fa7a9d91089b
+		summarizeBy: none
+		sourceColumn: Orden modelo
+
+	/// Canal que recibe el crédito.
+	column Canal
+		dataType: string
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 113c106f-67e1-4968-89fb-9a724ecb74ec
+		sourceColumn: Canal
+
+	/// Activaciones (fraccionales) atribuidas al canal por el modelo.
+	column 'Crédito de activaciones'
+		dataType: decimal
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 382d2ac3-8d93-4b54-b26e-fbb76091a8d2
+		sourceColumn: Crédito de activaciones
+
+	/// Primer día del trimestre; se relaciona con Fecha.
+	column 'Fecha trimestre'
+		dataType: dateTime
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: e413b407-005e-42e1-b883-b10163c90d5b
+		sourceColumn: Fecha trimestre
+
+	partition Atribución = m
+		mode: import
+		source =
+				let
+				    Origen = Csv.Document(File.Contents(RutaMarts & "fact_atribucion.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Encabezados = Table.PromoteHeaders(Origen, [PromoteAllScalars = true]),
+				    Renombradas = Table.RenameColumns(Encabezados, {{"trimestre", "Trimestre"}, {"modelo", "Modelo"}, {"canal", "Canal"}, {"activaciones_atribuidas", "Crédito de activaciones"}, {"fecha_trimestre", "Fecha trimestre"}}),
+				    Tipos = Table.TransformColumnTypes(Renombradas, {{"Trimestre", type text}, {"Modelo", type text}, {"Canal", type text}, {"Crédito de activaciones", Currency.Type}, {"Fecha trimestre", type date}}, "en-US"),
+				    OrdenModelo = Table.AddColumn(Tipos, "Orden modelo", each List.PositionOf({"Último clic", "Primer clic", "Lineal", "Posicional (40/20/40)", "Decaimiento temporal", "Markov", "Shapley"}, [Modelo]) + 1, Int64.Type)
+				in
+				    OrdenModelo
+

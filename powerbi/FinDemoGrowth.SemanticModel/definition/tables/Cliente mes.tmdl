@@ -1,0 +1,102 @@
+/// Actividad mensual de cada cliente activado: transacciones, saldo promedio e ingresos por comisiones y margen financiero. Una fila por cliente y mes.
+table 'Cliente mes'
+	lineageTag: 200feed1-d3d1-4d21-9307-de7a527c12b8
+
+	/// Clientes con al menos una transacción en el periodo.
+	measure 'Clientes activos' = CALCULATE(DISTINCTCOUNT('Cliente mes'[Cliente ID]), 'Cliente mes'[Activo] = 1)
+		formatString: #,##0
+		lineageTag: 2f09efc8-30c6-4cc2-bcea-b080f1a959e6
+
+	/// Comisiones + margen financiero en COP.
+	measure 'Ingreso total' = SUM('Cliente mes'[Ingreso del mes])
+		formatString: $#,##0
+		lineageTag: bd33196e-6563-4d52-baac-8ffc4907216c
+
+	/// Cliente.
+	column 'Cliente ID'
+		dataType: string
+		isHidden
+		lineageTag: 793471eb-606b-4a4d-8550-701c7ab28dd0
+		sourceColumn: Cliente ID
+
+	/// Primer día del mes.
+	column Mes
+		dataType: dateTime
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 758ee867-fd87-47c6-896c-303fe684d8c2
+		sourceColumn: Mes
+
+	/// Saldo promedio del mes (COP).
+	column 'Saldo promedio'
+		dataType: decimal
+		isHidden
+		formatString: $#,##0
+		isAvailableInMdx: false
+		lineageTag: 65f6d9ff-1ff6-4495-9445-f9fe380e2484
+		sourceColumn: Saldo promedio
+
+	/// Transacciones del mes.
+	column 'Número de transacciones'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: cd4ab83c-9883-4524-8284-b0bc5e814950
+		sourceColumn: Número de transacciones
+
+	/// Monto transado en el mes (COP).
+	column 'Monto transado'
+		dataType: decimal
+		isHidden
+		formatString: $#,##0
+		isAvailableInMdx: false
+		lineageTag: b8f68578-c1a4-4d8d-9aaf-396fdcae5248
+		sourceColumn: Monto transado
+
+	/// Comisiones cobradas en el mes (COP).
+	column 'Ingreso por comisiones'
+		dataType: decimal
+		isHidden
+		formatString: $#,##0
+		isAvailableInMdx: false
+		lineageTag: fcc6b8c1-c8b7-46f4-acda-79f45f599ad6
+		sourceColumn: Ingreso por comisiones
+
+	/// Margen financiero del mes sobre el saldo promedio (COP).
+	column 'Ingreso por margen'
+		dataType: decimal
+		isHidden
+		formatString: $#,##0
+		isAvailableInMdx: false
+		lineageTag: 15ac4840-bd75-4e45-98dd-919598edc975
+		sourceColumn: Ingreso por margen
+
+	/// Comisiones + margen del mes (COP).
+	column 'Ingreso del mes'
+		dataType: decimal
+		isHidden
+		formatString: $#,##0
+		isAvailableInMdx: false
+		lineageTag: 84692449-4b00-432e-bf9c-2554a893bbc4
+		sourceColumn: Ingreso del mes
+
+	/// 1 si el cliente tuvo al menos una transacción en el mes.
+	column Activo
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 9c72c3a0-0b4f-4874-a130-150749bcc23a
+		summarizeBy: none
+		sourceColumn: Activo
+
+	partition 'Cliente mes' = m
+		mode: import
+		source =
+				let
+				    Origen = Csv.Document(File.Contents(RutaMarts & "fact_cliente_mes.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Encabezados = Table.PromoteHeaders(Origen, [PromoteAllScalars = true]),
+				    Renombradas = Table.RenameColumns(Encabezados, {{"user_id", "Cliente ID"}, {"mes", "Mes"}, {"saldo_promedio_cop", "Saldo promedio"}, {"transacciones", "Número de transacciones"}, {"monto_cop", "Monto transado"}, {"ingreso_comisiones_cop", "Ingreso por comisiones"}, {"ingreso_margen_cop", "Ingreso por margen"}, {"ingreso_total_cop", "Ingreso del mes"}, {"activo", "Activo"}}),
+				    Tipos = Table.TransformColumnTypes(Renombradas, {{"Cliente ID", type text}, {"Mes", type date}, {"Saldo promedio", Currency.Type}, {"Número de transacciones", Int64.Type}, {"Monto transado", Currency.Type}, {"Ingreso por comisiones", Currency.Type}, {"Ingreso por margen", Currency.Type}, {"Ingreso del mes", Currency.Type}, {"Activo", Int64.Type}}, "en-US")
+				in
+				    Tipos
+

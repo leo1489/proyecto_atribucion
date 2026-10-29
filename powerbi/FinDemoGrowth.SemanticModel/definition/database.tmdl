@@ -1,0 +1,5 @@
+/// Modelo de growth analytics de FinDemo (datos sintéticos)
+database FinDemoGrowth
+	compatibilityLevel: 1702
+	language: 3082
+

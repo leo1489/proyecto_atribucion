@@ -1,0 +1,54 @@
+/// Audiencias dinámicas para pauta y CRM a la fecha de corte: una fila por persona y audiencia, con destino y objetivo.
+table Audiencias
+	lineageTag: 098f0294-b646-4307-a9a7-038e93a3be72
+
+	/// Personas en la audiencia.
+	measure 'Tamaño audiencia' = COUNTROWS('Audiencias')
+		formatString: #,##0
+		lineageTag: c21038a8-000f-4edf-86c5-7b98d5f3c463
+
+	/// Persona incluida en la audiencia.
+	column 'Cliente ID'
+		dataType: string
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: e64af3f6-82d3-41c3-b650-287d3c2c4b22
+		sourceColumn: Cliente ID
+
+	/// Nombre de la audiencia (regla de segmentación).
+	column Audiencia
+		dataType: string
+		lineageTag: de71631d-edc6-4f64-8d16-b9e354e0c2c9
+		sourceColumn: Audiencia
+
+	/// Plataformas donde se activa la audiencia.
+	column Destino
+		dataType: string
+		lineageTag: 04e3a8fd-e73c-4ba2-823c-fd6333d8fe5a
+		sourceColumn: Destino
+
+	/// Para qué se usa la audiencia.
+	column Objetivo
+		dataType: string
+		lineageTag: 383377b2-5d60-4708-bb8e-6486db0d0964
+		sourceColumn: Objetivo
+
+	/// Fecha en que se evaluó la regla.
+	column 'Fecha de corte'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: d00f3a42-4b64-4b3f-b064-5f7ba8122a17
+		summarizeBy: none
+		sourceColumn: Fecha de corte
+
+	partition Audiencias = m
+		mode: import
+		source =
+				let
+				    Origen = Csv.Document(File.Contents(RutaMarts & "fact_audiencias.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Encabezados = Table.PromoteHeaders(Origen, [PromoteAllScalars = true]),
+				    Renombradas = Table.RenameColumns(Encabezados, {{"user_id", "Cliente ID"}, {"audiencia", "Audiencia"}, {"destino", "Destino"}, {"objetivo", "Objetivo"}, {"fecha_corte", "Fecha de corte"}}),
+				    Tipos = Table.TransformColumnTypes(Renombradas, {{"Cliente ID", type text}, {"Audiencia", type text}, {"Destino", type text}, {"Objetivo", type text}, {"Fecha de corte", type date}}, "en-US")
+				in
+				    Tipos
+

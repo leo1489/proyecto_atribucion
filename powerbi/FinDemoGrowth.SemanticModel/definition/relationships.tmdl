@@ -1,0 +1,52 @@
+relationship Sesiones_Fecha_Fecha_Fecha
+	fromColumn: Sesiones.Fecha
+	toColumn: Fecha.Fecha
+
+relationship Embudo_Fecha_Fecha_Fecha
+	fromColumn: Embudo.Fecha
+	toColumn: Fecha.Fecha
+
+relationship Inversión_Fecha_Fecha_Fecha
+	fromColumn: Inversión.Fecha
+	toColumn: Fecha.Fecha
+
+relationship 'Atribución_Fecha trimestre_Fecha_Fecha'
+	fromColumn: Atribución.'Fecha trimestre'
+	toColumn: Fecha.Fecha
+
+relationship 'Cliente mes_Mes_Fecha_Fecha'
+	fromColumn: 'Cliente mes'.Mes
+	toColumn: Fecha.Fecha
+
+relationship Sesiones_Canal_Canal_Canal
+	fromColumn: Sesiones.Canal
+	toColumn: Canal.Canal
+
+relationship Embudo_Canal_Canal_Canal
+	fromColumn: Embudo.Canal
+	toColumn: Canal.Canal
+
+relationship Inversión_Canal_Canal_Canal
+	fromColumn: Inversión.Canal
+	toColumn: Canal.Canal
+
+relationship Atribución_Canal_Canal_Canal
+	fromColumn: Atribución.Canal
+	toColumn: Canal.Canal
+
+relationship 'Retención cohortes_Canal_Canal_Canal'
+	fromColumn: 'Retención cohortes'.Canal
+	toColumn: Canal.Canal
+
+relationship 'Cliente_Canal primer toque_Canal_Canal'
+	fromColumn: Cliente.'Canal primer toque'
+	toColumn: Canal.Canal
+
+relationship 'Cliente mes_Cliente ID_Cliente_Cliente ID'
+	fromColumn: 'Cliente mes'.'Cliente ID'
+	toColumn: Cliente.'Cliente ID'
+
+relationship 'Audiencias_Cliente ID_Cliente_Cliente ID'
+	fromColumn: Audiencias.'Cliente ID'
+	toColumn: Cliente.'Cliente ID'
+

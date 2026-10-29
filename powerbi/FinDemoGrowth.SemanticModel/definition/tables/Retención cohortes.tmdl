@@ -1,0 +1,78 @@
+/// Clientes activos por cohorte de activación (mes), canal de primer toque y meses desde la activación. Incluye meses con 0 activos.
+table 'Retención cohortes'
+	lineageTag: 08b0b79f-9340-42d5-9aeb-cec643a84892
+
+	/// Clientes activos sobre tamaño de cohorte; usar junto a Mes desde activación.
+	measure Retención = DIVIDE(SUM('Retención cohortes'[Número de clientes activos]), SUM('Retención cohortes'[Tamaño de cohorte]))
+		formatString: 0.0%
+		lineageTag: 396dcabf-c4f3-43ff-a1a9-7245264d2a56
+
+	/// Retención al primer mes después de la activación.
+	measure 'Retención mes 1' = CALCULATE([Retención], 'Retención cohortes'[Mes desde activación] = 1)
+		formatString: 0.0%
+		displayFolder: Hitos
+		lineageTag: 2a484835-295d-45b9-93b5-86520721bb29
+
+	/// Retención al tercer mes después de la activación.
+	measure 'Retención mes 3' = CALCULATE([Retención], 'Retención cohortes'[Mes desde activación] = 3)
+		formatString: 0.0%
+		displayFolder: Hitos
+		lineageTag: 01b74645-3960-4668-b4fe-bc5eaeab262d
+
+	/// Retención al sexto mes después de la activación.
+	measure 'Retención mes 6' = CALCULATE([Retención], 'Retención cohortes'[Mes desde activación] = 6)
+		formatString: 0.0%
+		displayFolder: Hitos
+		lineageTag: 8fd86812-69b8-427a-9e3c-a206c26ac425
+
+	/// Mes de activación de la cohorte.
+	column Cohorte
+		dataType: dateTime
+		formatString: yyyy-mm
+		lineageTag: e9bfc411-9a15-4f6e-becb-e1c5bcfd1dc0
+		summarizeBy: none
+		sourceColumn: Cohorte
+
+	/// Canal de primer toque de la cohorte.
+	column Canal
+		dataType: string
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: e7487024-d259-47fe-8825-aeed2e0217eb
+		sourceColumn: Canal
+
+	/// Meses transcurridos desde la activación (0 = mes de activación).
+	column 'Mes desde activación'
+		dataType: int64
+		lineageTag: 0b10aeaa-5550-40a8-a594-e3f0e18594a9
+		summarizeBy: none
+		sourceColumn: Mes desde activación
+
+	/// Clientes de la cohorte con al menos una transacción en ese mes.
+	column 'Número de clientes activos'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: 258d17c5-cead-4cd1-8f9d-97a92ef84a46
+		sourceColumn: Número de clientes activos
+
+	/// Clientes activados en la cohorte.
+	column 'Tamaño de cohorte'
+		dataType: int64
+		isHidden
+		isAvailableInMdx: false
+		lineageTag: ec253e41-a087-4b9e-990f-458954b51424
+		sourceColumn: Tamaño de cohorte
+
+	partition 'Retención cohortes' = m
+		mode: import
+		source =
+				let
+				    Origen = Csv.Document(File.Contents(RutaMarts & "fact_retencion_cohortes.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Encabezados = Table.PromoteHeaders(Origen, [PromoteAllScalars = true]),
+				    Columnas = Table.SelectColumns(Encabezados, {"cohorte", "canal", "mes_desde_activacion", "clientes_activos", "tamano_cohorte"}),
+				    Renombradas = Table.RenameColumns(Columnas, {{"cohorte", "Cohorte"}, {"canal", "Canal"}, {"mes_desde_activacion", "Mes desde activación"}, {"clientes_activos", "Número de clientes activos"}, {"tamano_cohorte", "Tamaño de cohorte"}}),
+				    Tipos = Table.TransformColumnTypes(Renombradas, {{"Cohorte", type date}, {"Canal", type text}, {"Mes desde activación", Int64.Type}, {"Número de clientes activos", Int64.Type}, {"Tamaño de cohorte", Int64.Type}}, "en-US")
+				in
+				    Tipos
+

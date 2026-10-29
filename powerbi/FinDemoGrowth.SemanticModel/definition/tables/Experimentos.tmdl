@@ -1,0 +1,172 @@
+/// Resultados de los A/B tests: muestras, tasas, lift, intervalo de confianza, p-valor, chequeo de SRM, efecto mínimo detectable y decisión. Una fila por test.
+table Experimentos
+	lineageTag: 30800d66-4d8f-4939-9b12-7bb57963ff34
+
+	/// Tasa de la métrica en el control (A) del test filtrado.
+	measure 'Tasa variante A' = MAX('Experimentos'[Tasa A])
+		formatString: 0.0%
+		lineageTag: 9a744929-eb02-460a-9226-6485d5f60904
+
+	/// Tasa de la métrica en el tratamiento (B) del test filtrado.
+	measure 'Tasa variante B' = MAX('Experimentos'[Tasa B])
+		formatString: 0.0%
+		lineageTag: ca230f43-5ecf-453a-85c8-04189d181c79
+
+	/// Identificador del test.
+	column 'Test ID'
+		dataType: string
+		isHidden
+		isKey
+		lineageTag: 83ab9472-b1a0-4ca0-a232-c486e362944a
+		sourceColumn: Test ID
+
+	/// Nombre del experimento.
+	column Test
+		dataType: string
+		lineageTag: 907517c2-51ee-4cd8-89b5-8f4babffab61
+		sourceColumn: Test
+
+	/// Métrica de éxito del test.
+	column Métrica
+		dataType: string
+		lineageTag: 79c22a10-5a0a-44eb-a8e7-f8d0dd5660f1
+		sourceColumn: Métrica
+
+	/// Inicio de la asignación.
+	column Inicio
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: 063ed8a5-1536-412b-b7be-6d4ef3420971
+		summarizeBy: none
+		sourceColumn: Inicio
+
+	/// Fin de la asignación.
+	column Fin
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: 59edb64e-b07d-453c-a286-d8671ecac12b
+		summarizeBy: none
+		sourceColumn: Fin
+
+	/// Personas en la variante A (control).
+	column 'Muestra A'
+		dataType: int64
+		formatString: #,##0
+		lineageTag: dd737643-6420-4e2f-b3b1-8aa63cf4c7d2
+		summarizeBy: none
+		sourceColumn: Muestra A
+
+	/// Personas en la variante B (tratamiento).
+	column 'Muestra B'
+		dataType: int64
+		formatString: #,##0
+		lineageTag: 1a5052c0-29ee-4699-bcfd-249e36033836
+		summarizeBy: none
+		sourceColumn: Muestra B
+
+	/// Personas de A que cumplieron la métrica.
+	column 'Conversiones A'
+		dataType: int64
+		formatString: #,##0
+		lineageTag: de055140-bf62-410b-9d2c-21a0c0b93502
+		summarizeBy: none
+		sourceColumn: Conversiones A
+
+	/// Personas de B que cumplieron la métrica.
+	column 'Conversiones B'
+		dataType: int64
+		formatString: #,##0
+		lineageTag: 7ed635a8-2060-4130-9c5f-39936f0e6b12
+		summarizeBy: none
+		sourceColumn: Conversiones B
+
+	/// Tasa de la métrica en A.
+	column 'Tasa A'
+		dataType: decimal
+		formatString: 0.0%
+		lineageTag: f8db665c-fb8a-4e35-a01f-1daa96916e7c
+		summarizeBy: none
+		sourceColumn: Tasa A
+
+	/// Tasa de la métrica en B.
+	column 'Tasa B'
+		dataType: decimal
+		formatString: 0.0%
+		lineageTag: 0b345677-da10-4adf-a995-bf130baac332
+		summarizeBy: none
+		sourceColumn: Tasa B
+
+	/// Tasa B menos tasa A, en puntos porcentuales.
+	column 'Diferencia absoluta'
+		dataType: decimal
+		formatString: 0.0%
+		lineageTag: 01590dca-49e7-4515-b4da-0f269fff1819
+		summarizeBy: none
+		sourceColumn: Diferencia absoluta
+
+	/// Diferencia absoluta dividida por la tasa A.
+	column 'Lift relativo'
+		dataType: decimal
+		formatString: 0.0%
+		lineageTag: 9563f94b-243f-4555-9b69-0d41776ea423
+		summarizeBy: none
+		sourceColumn: Lift relativo
+
+	/// Límite inferior del intervalo de confianza del 95 % de la diferencia (IC: intervalo de confianza).
+	column 'IC 95 inferior'
+		dataType: decimal
+		formatString: 0.0%
+		lineageTag: 8f6e1a31-3a2c-4a64-bc6f-a7a1838e923b
+		summarizeBy: none
+		sourceColumn: IC 95 inferior
+
+	/// Límite superior del intervalo de confianza del 95 % de la diferencia.
+	column 'IC 95 superior'
+		dataType: decimal
+		formatString: 0.0%
+		lineageTag: d115a7cb-df34-48a4-a263-47f480ca0a09
+		summarizeBy: none
+		sourceColumn: IC 95 superior
+
+	/// p-valor bilateral de la prueba z de dos proporciones.
+	column p-valor
+		dataType: decimal
+		formatString: 0.000
+		lineageTag: 4df1ac83-fe1a-4cb4-a741-b07711dd25f1
+		summarizeBy: none
+		sourceColumn: p-valor
+
+	/// p-valor del chequeo de Sample Ratio Mismatch (SRM) contra 50/50; menor a 0,01 indica asignación desbalanceada.
+	column 'p-valor SRM'
+		dataType: decimal
+		formatString: 0.00
+		lineageTag: 8123f920-7971-4363-a8c2-345d5d0a200e
+		summarizeBy: none
+		sourceColumn: p-valor SRM
+
+	/// Diferencia absoluta mínima detectable con 80 % de potencia (MDE) dado el tamaño de muestra.
+	column 'Efecto mínimo detectable'
+		dataType: decimal
+		formatString: 0.0%
+		lineageTag: 46810fe5-1741-4304-9c4f-664bb5b803b7
+		summarizeBy: none
+		sourceColumn: Efecto mínimo detectable
+
+	/// Recomendación según significancia y efecto mínimo detectable.
+	column Decisión
+		dataType: string
+		lineageTag: 25c0bfec-45f4-4891-8d49-c2d96544593f
+		sourceColumn: Decisión
+
+	partition Experimentos = m
+		mode: import
+		source =
+				let
+				    Origen = Csv.Document(File.Contents(RutaMarts & "ab_resultados.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Encabezados = Table.PromoteHeaders(Origen, [PromoteAllScalars = true]),
+				    Columnas = Table.SelectColumns(Encabezados, {"test_id", "nombre", "metrica", "inicio", "fin", "n_a", "n_b", "conv_a", "conv_b", "tasa_a", "tasa_b", "diferencia_abs", "lift_relativo", "ic_inf", "ic_sup", "p_valor", "srm_p_valor", "mde_abs", "decision"}),
+				    Renombradas = Table.RenameColumns(Columnas, {{"test_id", "Test ID"}, {"nombre", "Test"}, {"metrica", "Métrica"}, {"inicio", "Inicio"}, {"fin", "Fin"}, {"n_a", "Muestra A"}, {"n_b", "Muestra B"}, {"conv_a", "Conversiones A"}, {"conv_b", "Conversiones B"}, {"tasa_a", "Tasa A"}, {"tasa_b", "Tasa B"}, {"diferencia_abs", "Diferencia absoluta"}, {"lift_relativo", "Lift relativo"}, {"ic_inf", "IC 95 inferior"}, {"ic_sup", "IC 95 superior"}, {"p_valor", "p-valor"}, {"srm_p_valor", "p-valor SRM"}, {"mde_abs", "Efecto mínimo detectable"}, {"decision", "Decisión"}}),
+				    Tipos = Table.TransformColumnTypes(Renombradas, {{"Test ID", type text}, {"Test", type text}, {"Métrica", type text}, {"Inicio", type date}, {"Fin", type date}, {"Muestra A", Int64.Type}, {"Muestra B", Int64.Type}, {"Conversiones A", Int64.Type}, {"Conversiones B", Int64.Type}, {"Tasa A", Currency.Type}, {"Tasa B", Currency.Type}, {"Diferencia absoluta", Currency.Type}, {"Lift relativo", Currency.Type}, {"IC 95 inferior", Currency.Type}, {"IC 95 superior", Currency.Type}, {"p-valor", Currency.Type}, {"p-valor SRM", Currency.Type}, {"Efecto mínimo detectable", Currency.Type}, {"Decisión", type text}}, "en-US")
+				in
+				    Tipos
+

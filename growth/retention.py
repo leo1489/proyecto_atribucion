@@ -18,6 +18,7 @@ def customer_month(transactions: pd.DataFrame, balances: pd.DataFrame) -> pd.Dat
     out = bal.merge(monthly, on=["customer_id", "month"], how="outer")
     out[["transacciones", "monto_cop", "ingreso_comisiones_cop"]] = (
         out[["transacciones", "monto_cop", "ingreso_comisiones_cop"]].fillna(0))
+    out["transacciones"] = out["transacciones"].astype(int)
     out["avg_balance_cop"] = out["avg_balance_cop"].fillna(0)
     out["ingreso_margen_cop"] = (out["avg_balance_cop"] * config.NIM_MONTHLY).round(0)
     out["ingreso_total_cop"] = out["ingreso_comisiones_cop"] + out["ingreso_margen_cop"]
@@ -39,7 +40,15 @@ def cohort_retention(cm: pd.DataFrame, customers: pd.DataFrame) -> pd.DataFrame:
     act["mes_desde_activacion"] = _months_between(act["month"], act["cohorte"])
     active = act.groupby(["cohorte", "first_channel", "mes_desde_activacion"]).size().rename("clientes_activos")
 
-    out = active.reset_index().merge(sizes.reset_index(), on=["cohorte", "first_channel"])
+    # Grilla completa: los meses observados sin clientes activos cuentan como 0.
+    snapshot_month = config.SNAPSHOT_DATE.to_period("M").to_timestamp()
+    grid = sizes.reset_index()
+    grid["meses_observados"] = _months_between(pd.Series(snapshot_month, index=grid.index), grid["cohorte"])
+    grid = grid.loc[grid.index.repeat(grid["meses_observados"] + 1)]
+    grid["mes_desde_activacion"] = grid.groupby(["cohorte", "first_channel"]).cumcount()
+    out = grid.drop(columns="meses_observados").merge(
+        active.reset_index(), on=["cohorte", "first_channel", "mes_desde_activacion"], how="left")
+    out["clientes_activos"] = out["clientes_activos"].fillna(0).astype(int)
     out["retencion"] = out["clientes_activos"] / out["tamano_cohorte"]
     return out.rename(columns={"first_channel": "canal"})
 

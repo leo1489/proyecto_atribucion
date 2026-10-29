@@ -1,0 +1,27 @@
+/// Tabla auxiliar con las 5 etapas del embudo, para graficarlas como categoría (sin relaciones).
+table Etapa
+	lineageTag: 604368d2-92b6-4b08-8791-da8b4d705ffb
+
+	/// Etapa del embudo de adquisición.
+	column Etapa
+		dataType: string
+		lineageTag: 636daf72-c8de-46a2-9d47-129b97eb80da
+		sourceColumn: Etapa
+		sortByColumn: 'Orden etapa'
+
+	/// Orden de la etapa (1 = visita).
+	column 'Orden etapa'
+		dataType: int64
+		isHidden
+		lineageTag: a24751e8-eacc-476b-a95f-226d494283ba
+		summarizeBy: none
+		sourceColumn: Orden etapa
+
+	partition Etapa = m
+		mode: import
+		source =
+				let
+				    Origen = #table(type table [Etapa = text, #"Orden etapa" = Int64.Type], {{"Visita", 1}, {"Registro", 2}, {"KYC completo", 3}, {"Cuenta aprobada", 4}, {"Primer depósito", 5}})
+				in
+				    Origen
+

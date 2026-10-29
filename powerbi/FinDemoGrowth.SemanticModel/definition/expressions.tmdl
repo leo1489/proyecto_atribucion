@@ -1,0 +1,4 @@
+/// Carpeta local con los CSV de data/marts (terminar en \). Ajustarla al clonar el repositorio.
+expression RutaMarts = "C:\Users\Manuel Revelo\Proyectos\proyecto_atribucion\data\marts\" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: 01478ee1-c26e-4e34-a398-fd024e754f29
+

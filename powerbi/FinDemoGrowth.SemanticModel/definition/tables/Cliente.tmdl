@@ -1,0 +1,215 @@
+/// Una fila por persona registrada en la app, con su avance en el embudo, canal de origen, estado de churn, segmento RFM, valor a 12 meses y variante de cada A/B test.
+table Cliente
+	lineageTag: dd0f4494-7568-4d9f-90f8-3a7ab8995010
+
+	/// Clientes activados (con primer depósito).
+	measure Clientes = CALCULATE(COUNTROWS('Cliente'), NOT ISBLANK('Cliente'[Fecha de activación]))
+		formatString: #,##0
+		lineageTag: f176847e-6bc3-4c93-85bb-8c11ec90a465
+
+	/// Clientes activados sin transacciones en los últimos 60 días a la fecha de corte, sobre clientes activados.
+	measure 'Churn %' = DIVIDE(SUM('Cliente'[Churn]), [Clientes])
+		formatString: 0.0%
+		lineageTag: bb2aa32e-7e87-4c95-a806-81d718b5145e
+
+	/// LTV observado: ingreso promedio por cliente en sus primeros 12 meses (solo cohortes con 12 meses completos).
+	measure 'Ingreso 12 meses promedio' = AVERAGE('Cliente'[Ingreso 12 meses])
+		formatString: $#,##0
+		lineageTag: bb5e2b73-73e6-4fd4-849c-053db3ad3d05
+
+	/// Ingreso de 12 meses por cliente sobre CAC Markov; por debajo de 1,0x el canal no recupera la inversión en un año.
+	measure 'LTV 12 meses / CAC' = DIVIDE([Ingreso 12 meses promedio], [CAC Markov])
+		formatString: 0.00"x"
+		lineageTag: 0122ad7f-696c-4b5c-a18c-f67b9cf03cd7
+
+	/// Monto transado promedio por cliente en los últimos 180 días.
+	measure 'Monto 180 días promedio' = AVERAGE('Cliente'[Monto 180 días])
+		formatString: $#,##0
+		lineageTag: 64e98c70-34ff-448b-b425-2a1420524821
+
+	/// Identificador del usuario en la app (llave).
+	column 'Cliente ID'
+		dataType: string
+		isHidden
+		isKey
+		lineageTag: 2d575589-f9a9-4e12-8897-453ec9a3f232
+		sourceColumn: Cliente ID
+
+	/// Día en que la persona creó la cuenta.
+	column 'Fecha de registro'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: a3c566e8-ae78-4ab3-91d8-bf631b0cd8ea
+		summarizeBy: none
+		sourceColumn: Fecha de registro
+
+	/// Día en que completó la verificación de identidad (KYC: Know Your Customer). Vacío si no la completó.
+	column 'Fecha de KYC'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: 9c363ee3-04e7-4830-be2a-2ed85ddd5d35
+		summarizeBy: none
+		sourceColumn: Fecha de KYC
+
+	/// Día en que se aprobó la cuenta.
+	column 'Fecha de aprobación'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: 3cf2d015-9ef1-497d-9026-fc5a717df340
+		summarizeBy: none
+		sourceColumn: Fecha de aprobación
+
+	/// Día del primer depósito; define al cliente activado.
+	column 'Fecha de activación'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: 7e48f154-5779-46ab-bdfc-425b623b882c
+		summarizeBy: none
+		sourceColumn: Fecha de activación
+
+	/// Dispositivo de la primera visita.
+	column Dispositivo
+		dataType: string
+		lineageTag: 52ba76a1-3b57-471c-afdb-bb56c927c48c
+		sourceColumn: Dispositivo
+
+	/// Ciudad de la primera visita.
+	column Ciudad
+		dataType: string
+		lineageTag: 37a49ac4-2948-4f3f-9354-3a4ad2f3ce02
+		dataCategory: City
+		sourceColumn: Ciudad
+
+	/// Rango de edad declarado al registrarse.
+	column 'Rango de edad'
+		dataType: string
+		lineageTag: 8194ab8e-aa31-43de-b573-50eb209f6911
+		sourceColumn: Rango de edad
+
+	/// Canal de la primera sesión; se relaciona con la tabla Canal.
+	column 'Canal primer toque'
+		dataType: string
+		isHidden
+		lineageTag: dec851fa-aefa-4fbc-8a2a-2d3619f56065
+		sourceColumn: Canal primer toque
+
+	/// Canal de la última sesión antes del registro.
+	column 'Canal último toque'
+		dataType: string
+		lineageTag: c9ffff16-b2f7-43fc-83b4-beef7a464667
+		sourceColumn: Canal último toque
+
+	/// Sesiones del journey antes del registro.
+	column 'Número de toques'
+		dataType: int64
+		lineageTag: da36ad9e-a383-476a-b6d8-cf3eb6f48f81
+		summarizeBy: none
+		sourceColumn: Número de toques
+
+	/// Última etapa del embudo alcanzada: Registro, KYC completo, Cuenta aprobada o Primer depósito.
+	column 'Etapa máxima'
+		dataType: string
+		lineageTag: 73aff2b8-de08-42aa-87b9-0b5e2dfd01ac
+		sourceColumn: Etapa máxima
+
+	/// Primer día del mes de activación.
+	column 'Cohorte de activación'
+		dataType: dateTime
+		formatString: yyyy-mm
+		lineageTag: 401d684f-eab4-45c1-bb23-07bb6f34e9c1
+		summarizeBy: none
+		sourceColumn: Cohorte de activación
+
+	/// Días desde la última transacción a la fecha de corte.
+	column 'Días inactivo'
+		dataType: int64
+		lineageTag: 13658364-36d8-4a33-9b9c-3f40ff8729c7
+		summarizeBy: none
+		sourceColumn: Días inactivo
+
+	/// 1 si el cliente activado no transa hace más de 60 días.
+	column Churn
+		dataType: int64
+		isHidden
+		lineageTag: 7e63a430-f709-4eb1-b216-9f1378acffc8
+		summarizeBy: none
+		sourceColumn: Churn
+
+	/// Quintil de recencia (5 = transacción más reciente).
+	column 'Puntaje R'
+		dataType: int64
+		lineageTag: cd2b5adb-d39e-4528-ac4b-a09b7558b742
+		summarizeBy: none
+		sourceColumn: Puntaje R
+
+	/// Quintil de frecuencia en los últimos 180 días.
+	column 'Puntaje F'
+		dataType: int64
+		lineageTag: b86b5dfa-19e7-495e-a801-579b3024f7db
+		summarizeBy: none
+		sourceColumn: Puntaje F
+
+	/// Quintil de monto transado en los últimos 180 días.
+	column 'Puntaje M'
+		dataType: int64
+		lineageTag: b0100eb4-27bd-4568-8b02-e35028284a55
+		summarizeBy: none
+		sourceColumn: Puntaje M
+
+	/// Segmento por recencia, frecuencia y monto (RFM) a la fecha de corte.
+	column 'Segmento RFM'
+		dataType: string
+		lineageTag: 8d243194-32c7-4c7f-aeb9-cad5d19965c4
+		sourceColumn: Segmento RFM
+		sortByColumn: 'Orden segmento'
+
+	/// Orden de los segmentos RFM, de Campeones a Perdidos.
+	column 'Orden segmento'
+		dataType: int64
+		isHidden
+		lineageTag: 62aa157f-bc5f-4ca9-80fd-3f2e2196e445
+		summarizeBy: none
+		sourceColumn: Orden segmento
+
+	/// Monto transado en los últimos 180 días (COP).
+	column 'Monto 180 días'
+		dataType: decimal
+		isHidden
+		formatString: $#,##0
+		lineageTag: 104babef-4573-4347-9422-d4a2a058c0a2
+		sourceColumn: Monto 180 días
+
+	/// Ingreso (comisiones + margen) de los primeros 12 meses; solo cohortes con 12 meses observados.
+	column 'Ingreso 12 meses'
+		dataType: decimal
+		isHidden
+		formatString: $#,##0
+		lineageTag: 65c2d58c-5c16-41a3-980e-0db5fb2f1dda
+		sourceColumn: Ingreso 12 meses
+
+	/// Variante asignada en el test de onboarding KYC (A o B).
+	column 'Variante AB01'
+		dataType: string
+		lineageTag: 1d51c9e9-0c3e-4533-a58b-6127ffaaea19
+		sourceColumn: Variante AB01
+
+	/// Variante asignada en el test de email de bienvenida (A o B).
+	column 'Variante AB02'
+		dataType: string
+		lineageTag: 1adf6b6c-48c6-4db8-bc5f-3534349eb7e6
+		sourceColumn: Variante AB02
+
+	partition Cliente = m
+		mode: import
+		source =
+				let
+				    Origen = Csv.Document(File.Contents(RutaMarts & "dim_cliente.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Encabezados = Table.PromoteHeaders(Origen, [PromoteAllScalars = true]),
+				    Columnas = Table.SelectColumns(Encabezados, {"user_id", "fecha_registro", "fecha_kyc", "fecha_aprobacion", "fecha_activacion", "dispositivo", "ciudad", "rango_edad", "canal_primer_toque", "canal_ultimo_toque", "n_toques", "etapa_maxima", "cohorte_activacion", "dias_inactivo", "churn", "r", "f", "m", "segmento_rfm", "monto_180d_cop", "ingreso_12m_cop", "variante_ab01", "variante_ab02"}),
+				    Vacios = Table.ReplaceValue(Columnas, "", null, Replacer.ReplaceValue, Table.ColumnNames(Columnas)),
+				    Renombradas = Table.RenameColumns(Vacios, {{"user_id", "Cliente ID"}, {"fecha_registro", "Fecha de registro"}, {"fecha_kyc", "Fecha de KYC"}, {"fecha_aprobacion", "Fecha de aprobación"}, {"fecha_activacion", "Fecha de activación"}, {"dispositivo", "Dispositivo"}, {"ciudad", "Ciudad"}, {"rango_edad", "Rango de edad"}, {"canal_primer_toque", "Canal primer toque"}, {"canal_ultimo_toque", "Canal último toque"}, {"n_toques", "Número de toques"}, {"etapa_maxima", "Etapa máxima"}, {"cohorte_activacion", "Cohorte de activación"}, {"dias_inactivo", "Días inactivo"}, {"churn", "Churn"}, {"r", "Puntaje R"}, {"f", "Puntaje F"}, {"m", "Puntaje M"}, {"segmento_rfm", "Segmento RFM"}, {"monto_180d_cop", "Monto 180 días"}, {"ingreso_12m_cop", "Ingreso 12 meses"}, {"variante_ab01", "Variante AB01"}, {"variante_ab02", "Variante AB02"}}),
+				    Tipos = Table.TransformColumnTypes(Renombradas, {{"Cliente ID", type text}, {"Fecha de registro", type date}, {"Fecha de KYC", type date}, {"Fecha de aprobación", type date}, {"Fecha de activación", type date}, {"Dispositivo", type text}, {"Ciudad", type text}, {"Rango de edad", type text}, {"Canal primer toque", type text}, {"Canal último toque", type text}, {"Número de toques", Int64.Type}, {"Etapa máxima", type text}, {"Cohorte de activación", type date}, {"Días inactivo", Int64.Type}, {"Churn", Int64.Type}, {"Puntaje R", Int64.Type}, {"Puntaje F", Int64.Type}, {"Puntaje M", Int64.Type}, {"Segmento RFM", type text}, {"Monto 180 días", Currency.Type}, {"Ingreso 12 meses", Currency.Type}, {"Variante AB01", type text}, {"Variante AB02", type text}}, "en-US"),
+				    OrdenSegmento = Table.AddColumn(Tipos, "Orden segmento", each List.PositionOf({"Campeones", "Leales", "Potenciales", "Necesitan atención", "En riesgo", "Hibernando", "Perdidos"}, [Segmento RFM]) + 1, Int64.Type)
+				in
+				    OrdenSegmento
+

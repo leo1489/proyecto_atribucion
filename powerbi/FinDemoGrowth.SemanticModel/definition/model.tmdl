@@ -1,0 +1,26 @@
+/// Growth analytics de FinDemo, una fintech colombiana ficticia: embudo, inversión, atribución multi-touch, retención, segmentos, experimentos y calidad de datos.
+model FinDemoGrowth
+	culture: es-CO
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	discourageImplicitMeasures
+	sourceQueryCulture: en-US
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation __PBI_TimeIntelligenceEnabled = 0
+
+ref table Fecha
+ref table Canal
+ref table Cliente
+ref table Sesiones
+ref table Embudo
+ref table Inversión
+ref table Atribución
+ref table 'Cliente mes'
+ref table 'Retención cohortes'
+ref table Audiencias
+ref table Experimentos
+ref table 'Calidad de datos'
+ref table Etapa
+

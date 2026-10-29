@@ -51,6 +51,7 @@ def build_marts(raw: dict[str, pd.DataFrame]) -> dict[str, pd.DataFrame]:
     touches = attribution.prepare_touches(
         sessions, customers.rename(columns={"first_deposit_at": "converted_at"}), config.LOOKBACK_DAYS)
     attr = attribution.attribution_by_period(touches, CHANNELS)
+    attr["fecha_trimestre"] = pd.PeriodIndex(attr["period"], freq="Q").start_time
 
     cm = retention.customer_month(transactions, balances)
     cohorts = retention.cohort_retention(cm, customers)
@@ -119,7 +120,13 @@ def _dim_customer(customers, churn, rfm_table, value_ltv, ab) -> pd.DataFrame:
            .merge(value_ltv.rename_axis("user_id").reset_index(), on="user_id", how="left"))
     variants = ab.pivot_table(index="user_id", columns="test_id", values="variant", aggfunc="first")
     variants.columns = [f"variante_{c.split('_')[0].lower()}" for c in variants.columns]
-    return out.merge(variants, left_on="user_id", right_index=True, how="left")
+    out = out.merge(variants, left_on="user_id", right_index=True, how="left")
+    # El tablero trabaja a nivel de día: se descarta la hora para no inflar la cardinalidad.
+    date_cols = ["fecha_registro", "fecha_kyc", "fecha_aprobacion", "fecha_activacion", "ultima_transaccion"]
+    out[date_cols] = out[date_cols].apply(lambda s: s.dt.normalize())
+    int_cols = ["dias_inactivo", "churn", "recencia_dias", "frecuencia_180d", "r", "f", "m"]
+    out[int_cols] = out[int_cols].astype("Int64")
+    return out
 
 
 def _sessions_daily(sessions: pd.DataFrame) -> pd.DataFrame:

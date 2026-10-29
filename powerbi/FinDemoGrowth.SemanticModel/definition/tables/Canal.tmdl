@@ -1,0 +1,43 @@
+/// Canales de marketing con su tipo (pagado, propio, ganado) y plataforma. Una fila por canal.
+table Canal
+	lineageTag: 3d07f300-e344-48dc-97e1-2e26ce49ee82
+
+	/// Canal agrupado al estilo GA4 (Paid Search, Paid Social, TikTok Ads, Afiliados, Email, Orgánico, Directo, Referidos).
+	column Canal
+		dataType: string
+		isKey
+		lineageTag: 44183635-8a81-461a-8bbb-88a05e37aef1
+		sourceColumn: Canal
+		sortByColumn: Orden
+
+	/// Pagado (pauta), Propio (email, referidos) o Ganado (orgánico, directo).
+	column 'Tipo de canal'
+		dataType: string
+		lineageTag: 14dfe7c2-7063-4ca0-a29a-e078c15ed122
+		sourceColumn: Tipo de canal
+
+	/// Plataforma que factura la inversión del canal.
+	column Plataforma
+		dataType: string
+		lineageTag: bf371381-a6d2-4609-bdd0-77371729ef62
+		sourceColumn: Plataforma
+
+	/// Orden de presentación de los canales.
+	column Orden
+		dataType: int64
+		isHidden
+		lineageTag: ed3a2d8b-5b1d-4adb-af48-18177daaead5
+		summarizeBy: none
+		sourceColumn: Orden
+
+	partition Canal = m
+		mode: import
+		source =
+				let
+				    Origen = Csv.Document(File.Contents(RutaMarts & "dim_canal.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Encabezados = Table.PromoteHeaders(Origen, [PromoteAllScalars = true]),
+				    Renombradas = Table.RenameColumns(Encabezados, {{"canal", "Canal"}, {"tipo_canal", "Tipo de canal"}, {"plataforma", "Plataforma"}, {"orden", "Orden"}}),
+				    Tipos = Table.TransformColumnTypes(Renombradas, {{"Canal", type text}, {"Tipo de canal", type text}, {"Plataforma", type text}, {"Orden", Int64.Type}}, "en-US")
+				in
+				    Tipos
+

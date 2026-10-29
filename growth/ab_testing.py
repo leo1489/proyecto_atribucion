@@ -64,8 +64,11 @@ def evaluate_tests(assignments: pd.DataFrame, customers: pd.DataFrame, cm: pd.Da
             "srm_p_valor": srm_p_value(int(n_a), int(n_b)),
             "mde_abs": minimum_detectable_effect((n_a + n_b) / 2, res["tasa_a"]),
         })
+        # Significativo pero con efecto menor al MDE: el test tenía poca potencia y
+        # el efecto observado probablemente está inflado (winner's curse).
         res["decision"] = (
-            "Implementar B" if res["significativo"] and res["diferencia_abs"] > 0
+            "Implementar B" if res["significativo"] and res["diferencia_abs"] >= res["mde_abs"]
+            else "Implementar B con holdout" if res["significativo"] and res["diferencia_abs"] > 0
             else "Mantener A" if res["significativo"]
             else "Sin evidencia: ampliar muestra" if abs(res["diferencia_abs"]) < res["mde_abs"]
             else "No concluyente"
