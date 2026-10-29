@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+
+# Fuentes crudas: se regeneran con `python -m growth.pipeline`
+data/raw/
+
+# Power BI: cachés locales del proyecto PBIP
+powerbi/**/.pbi/localSettings.json
+powerbi/**/.pbi/cache.abf

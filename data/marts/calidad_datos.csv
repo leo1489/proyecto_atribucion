@@ -1,0 +1,11 @@
+tabla,control,filas_con_falla,filas_evaluadas,pct_falla,estado
+ga4_sessions,session_id duplicado,0,140780,0.0,OK
+ga4_sessions,Canal sin clasificar,0,140780,0.0,OK
+app_customers,Registro sin sesión en GA4,0,9434,0.0,OK
+app_customers,Orden de etapas (registro ≤ KYC ≤ aprobación ≤ depósito),0,9434,0.0,OK
+hubspot_contacts,user_id duplicado en CRM,38,9472,0.004011824324324324,Alerta
+hubspot_contacts,Fuente original vacía,129,9472,0.013619087837837838,Falla
+hubspot_contacts,Fuente HubSpot distinta al primer canal GA4,194,9434,0.020563917744329023,Falla
+core_transactions,Transacción de cliente no activado,0,123407,0.0,OK
+core_transactions,Monto no positivo,0,123407,0.0,OK
+ad_spend,Inversión negativa,0,3227,0.0,OK
