@@ -1,6 +1,6 @@
 # Growth Analytics para una fintech: atribución, embudo, retención y experimentos
 
-Proyecto de portafolio que reproduce el trabajo de un **analista de datos de marketing digital** en una fintech colombiana. Integra las fuentes de un equipo de growth (GA4, HubSpot, plataformas de pauta y core transaccional), construye una capa de negocio para **Power BI** y responde preguntas como *¿qué canal merece más presupuesto?* o *¿dónde se pierden los clientes?*
+Proyecto de una fintech colombiana. Integra las fuentes de un equipo de growth (GA4, HubSpot, plataformas de pauta y core transaccional), construye una capa de negocio para **Power BI** y responde preguntas como *¿qué canal merece más presupuesto?* o *¿dónde se pierden los clientes?*
 
 > Los datos son **sintéticos** y corresponden a una fintech ficticia ("FinDemo"). El generador está diseñado para que haya patrones reales que descubrir, no ruido aleatorio. Así el proyecto se puede compartir sin exponer información de clientes.
 
