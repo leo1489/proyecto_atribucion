@@ -12,6 +12,49 @@ table Inversión
 		formatString: $#,##0
 		lineageTag: 829b15fc-bc3b-4a7a-bbd3-5cc09511278c
 
+	/// Inversión de los canales cuyo LTV a 12 meses no cubre su CAC Markov (LTV/CAC < 1). Los canales sin LTV medible (Email, Directo) no cuentan.
+	measure 'Inversión sin retorno a 12 meses' =
+			SUMX(
+			    VALUES('Canal'[Canal]),
+			    VAR _ratio = [LTV 12 meses / CAC]
+			    RETURN IF(NOT ISBLANK(_ratio) && _ratio < 1, [Inversión])
+			)
+		formatString: $#,##0
+		displayFolder: Diseño
+		lineageTag: 5e09717c-db80-4661-82ed-feccb32e9c28
+
+	/// Parte de la inversión puesta en canales que no se pagan en 12 meses.
+	measure '% inversión sin retorno a 12 meses' = DIVIDE([Inversión sin retorno a 12 meses], [Inversión])
+		formatString: 0%
+		displayFolder: Diseño
+		lineageTag: eda4b1da-17fa-477d-8923-44551b488f4c
+
+	/// Parte de la inversión en canales de tipo Pagado.
+	measure '% inversión en pauta pagada' = DIVIDE(CALCULATE([Inversión], KEEPFILTERS('Canal'[Tipo de canal] = "Pagado")), [Inversión])
+		formatString: 0%
+		displayFolder: Diseño
+		lineageTag: 9cd3c718-ab71-489f-ae3a-5c9d621c8438
+
+	/// Texto de contexto para la tarjeta de inversión.
+	measure 'Contexto inversión' = FORMAT([% inversión en pauta pagada], "0%") & " en pauta pagada"
+		displayFolder: Diseño
+		lineageTag: 2a1ae78b-9e4b-4250-b52f-797beb43dda3
+
+	/// SVG de dona con el % de inversión en canales sin retorno a 12 meses.
+	measure 'Dona inversión sin retorno' =
+			VAR _p = COALESCE([% inversión sin retorno a 12 meses], 0)
+			VAR _arco = FORMAT(_p * 439.8, "0.0", "en-US")
+			VAR _texto = FORMAT(_p * 100, "0", "en-US") & "%25"
+			RETURN
+			    "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'>"
+			        & "<circle cx='100' cy='100' r='70' fill='none' stroke='%23E6EBF2' stroke-width='24'/>"
+			        & "<circle cx='100' cy='100' r='70' fill='none' stroke='%23F28C28' stroke-width='24' stroke-linecap='round' stroke-dasharray='" & _arco & " 440' transform='rotate(-90 100 100)'/>"
+			        & "<text x='100' y='112' text-anchor='middle' font-family='Segoe UI' font-size='38' font-weight='700' fill='%230E2841'>" & _texto & "</text>"
+			        & "</svg>"
+		displayFolder: Diseño
+		lineageTag: 85f765fe-496f-43c8-8ab6-e784b1a0e4bf
+		dataCategory: ImageUrl
+
 	/// Día de la inversión.
 	column Fecha
 		dataType: dateTime

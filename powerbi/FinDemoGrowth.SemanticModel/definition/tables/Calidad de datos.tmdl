@@ -7,6 +7,26 @@ table 'Calidad de datos'
 		formatString: #,##0
 		lineageTag: 33b8b4da-aedc-4618-9fce-c3718702f39c
 
+	/// Controles sin filas con falla.
+	measure 'Controles OK' = CALCULATE(COUNTROWS('Calidad de datos'), 'Calidad de datos'[Estado] = "OK")
+		formatString: #,##0
+		lineageTag: 16425d35-5425-48fe-9992-30463ce0463e
+
+	/// Texto de contexto para la tarjeta de controles con falla.
+	measure 'Contexto controles con falla' = "Falla máxima: " & SUBSTITUTE(FORMAT(MAX('Calidad de datos'[Porcentaje de falla]), "0.0%"), ".", ",")
+		displayFolder: Diseño
+		lineageTag: 7c0d0e99-4b02-442d-b73f-0ae2a02ee48f
+
+	/// Texto de contexto para la tarjeta de controles OK.
+	measure 'Contexto controles OK' = "de " & FORMAT(COUNTROWS('Calidad de datos'), "0") & " controles"
+		displayFolder: Diseño
+		lineageTag: 6b5833c6-49e0-4f4e-a0fd-3f1cb45af4cd
+
+	/// Color del texto de estado: rojo Falla, naranja Alerta, verde OK.
+	measure 'Color estado calidad' = SWITCH(SELECTEDVALUE('Calidad de datos'[Estado]), "Falla", "#D64545", "Alerta", "#E07A10", "OK", "#2E7D5B")
+		displayFolder: Diseño
+		lineageTag: 391f6908-a963-40b8-b7a9-6f03c616a325
+
 	/// Tabla cruda evaluada.
 	column 'Tabla fuente'
 		dataType: string

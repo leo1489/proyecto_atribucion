@@ -7,6 +7,17 @@ table Audiencias
 		formatString: #,##0
 		lineageTag: c21038a8-000f-4edf-86c5-7b98d5f3c463
 
+	/// Personas en las audiencias Recuperar KYC incompleto e Impulsar primer depósito.
+	measure 'Cuentas por activar' = CALCULATE([Tamaño audiencia], KEEPFILTERS('Audiencias'[Audiencia] IN {"Recuperar KYC incompleto", "Impulsar primer depósito"}))
+		formatString: #,##0
+		displayFolder: Diseño
+		lineageTag: 10b09152-6f39-4711-bcd3-80cacdd37d6d
+
+	/// Texto de contexto para la tarjeta de cuentas por activar.
+	measure 'Contexto cuentas por activar' = "KYC incompleto o sin primer depósito"
+		displayFolder: Diseño
+		lineageTag: 305bd472-82cc-4364-867c-1c0780b80201
+
 	/// Persona incluida en la audiencia.
 	column 'Cliente ID'
 		dataType: string

@@ -50,6 +50,48 @@ table Atribución
 		displayFolder: Por modelo
 		lineageTag: 86f480dc-9637-4c37-b0ee-3ed89a2e6e77
 
+	/// Canal con el CAC Markov más alto, para la tarjeta de CAC.
+	measure 'Contexto CAC' =
+			VAR _top =
+			    TOPN(1, FILTER(ADDCOLUMNS(VALUES('Canal'[Canal]), "@cac", [CAC Markov]), NOT ISBLANK([@cac])), [@cac], DESC)
+			RETURN "Más caro: " & MAXX(_top, 'Canal'[Canal]) & " " & SUBSTITUTE(FORMAT(MAXX(_top, [@cac]), "$#,0"), ",", ".")
+		displayFolder: Diseño
+		lineageTag: 978f81ed-728b-468a-9419-59c029bd001b
+
+	/// Canal que más crédito gana al pasar de último clic a Markov.
+	measure 'Canal más subvalorado' = MAXX(TOPN(1, FILTER(ADDCOLUMNS(VALUES('Canal'[Canal]), "@d", [Cambio Markov vs último clic]), NOT ISBLANK([@d])), [@d], DESC), 'Canal'[Canal])
+		displayFolder: Diseño
+		lineageTag: 1491283f-1819-4a40-afe4-07b3ac01fb44
+
+	/// Variación del canal más subvalorado.
+	measure 'Contexto subvalorado' =
+			VAR _top = TOPN(1, FILTER(ADDCOLUMNS(VALUES('Canal'[Canal]), "@d", [Cambio Markov vs último clic]), NOT ISBLANK([@d])), [@d], DESC)
+			RETURN FORMAT(MAXX(_top, [@d]), "+0%;-0%") & " de crédito con Markov"
+		displayFolder: Diseño
+		lineageTag: 07243bca-5337-4fad-be1a-7776a97a9919
+
+	/// Canal que más crédito pierde al pasar de último clic a Markov.
+	measure 'Canal más sobrevalorado' = MAXX(TOPN(1, FILTER(ADDCOLUMNS(VALUES('Canal'[Canal]), "@d", [Cambio Markov vs último clic]), NOT ISBLANK([@d])), [@d], ASC), 'Canal'[Canal])
+		displayFolder: Diseño
+		lineageTag: 8ece6622-1efd-4259-918b-18c76eebf4e0
+
+	/// Variación del canal más sobrevalorado.
+	measure 'Contexto sobrevalorado' =
+			VAR _top = TOPN(1, FILTER(ADDCOLUMNS(VALUES('Canal'[Canal]), "@d", [Cambio Markov vs último clic]), NOT ISBLANK([@d])), [@d], ASC)
+			RETURN FORMAT(MINX(_top, [@d]), "+0%;-0%") & " de crédito con Markov"
+		displayFolder: Diseño
+		lineageTag: cc185558-a93f-4859-bb82-33543ae82270
+
+	/// Texto de contexto para las activaciones atribuidas.
+	measure 'Contexto activaciones Markov' = "Repartidas entre " & FORMAT(COUNTROWS(FILTER(VALUES('Canal'[Canal]), [Activaciones Markov] > 0)), "0") & " canales"
+		displayFolder: Diseño
+		lineageTag: 4e4ab7ef-dc42-45c4-a381-cfc8985e02a5
+
+	/// Naranja si el canal gana crédito con Markov, gris si lo pierde.
+	measure 'Color cambio Markov' = IF([Cambio Markov vs último clic] >= 0, "#F28C28", "#9AA8BA")
+		displayFolder: Diseño
+		lineageTag: c8a5822e-1de3-4e9a-a978-8c441bb59d4b
+
 	/// Trimestre de la conversión (AAAAQn).
 	column Trimestre
 		dataType: string

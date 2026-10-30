@@ -75,6 +75,14 @@ Para abrirlo:
 
 El modelo semántico (`FinDemoGrowth.SemanticModel`) importa los CSV de `data/marts/`, tiene relaciones de un solo sentido y medidas documentadas (descripción y formato en cada una). Las páginas del reporte se generan con [`powerbi/tools/generate_report.js`](powerbi/tools/generate_report.js) a partir del contrato de diseño en [`_brief/report-spec.md`](_brief/report-spec.md).
 
+**Decisiones de diseño:**
+
+- **Menú lateral fijo** con logo, navegación entre páginas (botones con acción de página) y filtros. Así el lienzo queda libre para los datos y el usuario no depende de las pestañas de Power BI.
+- **Título con el hallazgo** en cada página y una franja de KPIs con ícono y línea de contexto. La tarjeta oscura marca la métrica principal.
+- **Visuales nativos + SVG generado con DAX**, en lugar de visuales HTML de terceros: la dona de "inversión sin retorno" y los minigráficos de tendencia por canal son medidas con categoría *Image URL*. No dependen de visuales personalizados, se ven igual en Desktop y en el servicio, y respetan los filtros.
+- **Color con significado**: azul marino para lo neutro y naranja para lo que exige atención (canales con LTV/CAC < 1,0x, canales subvalorados por el último clic). Lo aplican medidas de color (*field value formatting*), no reglas fijas en cada visual.
+- **Textos dinámicos** ("Más caro: Paid Search $168.290", "TikTok Ads +57 % de crédito con Markov"): se calculan con `TOPN` sobre el contexto de filtro, así que cambian con los filtros.
+
 ## Datos simulados
 
 - **60.000 visitantes** entre enero de 2025 y junio de 2026, con 140.000 sesiones en 8 canales. La fecha de corte del análisis es el 30 de septiembre de 2026.

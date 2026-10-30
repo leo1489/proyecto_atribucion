@@ -12,6 +12,28 @@ table Experimentos
 		formatString: 0.0%
 		lineageTag: ca230f43-5ecf-453a-85c8-04189d181c79
 
+	/// Lift relativo del test de onboarding KYC simplificado.
+	measure 'Lift onboarding KYC' = CALCULATE(MAX('Experimentos'[Lift relativo]), KEEPFILTERS('Experimentos'[Test ID] = "AB01_onboarding_kyc"))
+		formatString: 0.0%
+		displayFolder: Diseño
+		lineageTag: 6f78d893-4fed-4999-a9f4-2d706aaece54
+
+	/// Lift relativo del test de email de bienvenida.
+	measure 'Lift email bienvenida' = CALCULATE(MAX('Experimentos'[Lift relativo]), KEEPFILTERS('Experimentos'[Test ID] = "AB02_email_bienvenida"))
+		formatString: 0.0%
+		displayFolder: Diseño
+		lineageTag: 76099030-adfa-41c1-ac8d-97ffc764ae55
+
+	/// p-valor del test de onboarding KYC.
+	measure 'Contexto lift KYC' = "p = " & SUBSTITUTE(FORMAT(CALCULATE(MAX('Experimentos'[p-valor]), KEEPFILTERS('Experimentos'[Test ID] = "AB01_onboarding_kyc")), "0.000"), ".", ",")
+		displayFolder: Diseño
+		lineageTag: bf3fbf30-adf5-47f1-bc83-f5e49e4f70d9
+
+	/// p-valor del test de email de bienvenida.
+	measure 'Contexto lift email' = "p = " & SUBSTITUTE(FORMAT(CALCULATE(MAX('Experimentos'[p-valor]), KEEPFILTERS('Experimentos'[Test ID] = "AB02_email_bienvenida")), "0.000"), ".", ",")
+		displayFolder: Diseño
+		lineageTag: daef6522-7353-452b-a953-9d22de77d592
+
 	/// Identificador del test.
 	column 'Test ID'
 		dataType: string

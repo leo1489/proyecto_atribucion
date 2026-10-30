@@ -25,6 +25,11 @@ table 'Retención cohortes'
 		displayFolder: Hitos
 		lineageTag: 8fd86812-69b8-427a-9e3c-a206c26ac425
 
+	/// Texto de contexto para la tarjeta de retención.
+	measure 'Contexto retención' = "Mes 6: " & SUBSTITUTE(FORMAT([Retención mes 6], "0.0%"), ".", ",")
+		displayFolder: Diseño
+		lineageTag: ec0cf65f-2cca-4630-9a97-d074ed5a47af
+
 	/// Mes de activación de la cohorte.
 	column Cohorte
 		dataType: dateTime

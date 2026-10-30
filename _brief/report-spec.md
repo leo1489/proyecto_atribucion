@@ -655,3 +655,4 @@ Design Brief:
 - El embudo usa una tabla auxiliar `Etapa` y la medida `Embudo[Personas en la etapa]`, porque el visual de embudo necesita una categoría.
 - Las franjas de KPIs se implementaron como una sola tarjeta multivalor por página.
 - El título de la página 6 cambió porque la regla de decisión del pipeline ahora marca "Implementar B con holdout" cuando el efecto observado es menor que el MDE.
+- Rediseño orientado al usuario final (posterior a la aprobación): menú lateral fijo con logo genérico de FinDemo, navegación con botones y filtros; paleta azul marino + naranja; tarjetas KPI con ícono y línea de contexto (medidas de texto); dona y minigráficos en SVG generados con DAX; color por medida (*field value*) para LTV/CAC, cambio de Markov y estado de calidad. El layout vigente es el de `powerbi/tools/generate_report.js`; las grillas del contrato de arriba describen la primera versión.

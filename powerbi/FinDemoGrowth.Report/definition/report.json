@@ -11,7 +11,7 @@
       "type": "SharedResources"
     },
     "customTheme": {
-      "name": "FinDemoSobria-7c1e9a42.json",
+      "name": "FinDemoNavyOrange-5a9c13e2.json",
       "reportVersionAtImport": {
         "visual": "2.11.0",
         "report": "3.4.0",
@@ -37,9 +37,14 @@
       "type": "RegisteredResources",
       "items": [
         {
-          "name": "FinDemoSobria-7c1e9a42.json",
-          "path": "FinDemoSobria-7c1e9a42.json",
+          "name": "FinDemoNavyOrange-5a9c13e2.json",
+          "path": "FinDemoNavyOrange-5a9c13e2.json",
           "type": "CustomTheme"
+        },
+        {
+          "name": "FinDemoLogo1761780000.png",
+          "path": "FinDemoLogo1761780000.png",
+          "type": "Image"
         }
       ]
     }
@@ -50,6 +55,7 @@
     "defaultDrillFilterOtherVisuals": true,
     "allowChangeFilterTypes": true,
     "useEnhancedTooltips": true,
-    "useDefaultAggregateDisplayName": true
+    "useDefaultAggregateDisplayName": true,
+    "hideVisualContainerHeader": true
   }
 }

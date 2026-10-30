@@ -76,6 +76,48 @@ table Embudo
 		displayFolder: Etapas
 		lineageTag: 67fbb53b-1335-44d7-9da7-02af1039384a
 
+	/// Texto de contexto para la tarjeta de activados.
+	measure 'Contexto activados' = SUBSTITUTE(FORMAT([Conversión total], "0.0%"), ".", ",") & " de los visitantes"
+		displayFolder: Diseño
+		lineageTag: 3bd949ed-5f58-476a-a881-8cbbe0aea734
+
+	/// Texto de contexto para la tarjeta de visitantes.
+	measure 'Contexto visitantes' = SUBSTITUTE(FORMAT([Registros], "#,0"), ",", ".") & " se registraron"
+		displayFolder: Diseño
+		lineageTag: 4205ecad-e04a-435c-b513-329eff8626fb
+
+	/// Minigráfico SVG de activados por mes, para tablas por canal. Solo usa los meses con tráfico dentro de la selección.
+	measure 'Tendencia activados' =
+			VAR _meses =
+			    FILTER(
+			        CALCULATETABLE(VALUES('Fecha'[Año mes]), ALLSELECTED('Fecha')),
+			        CALCULATE([Visitantes], REMOVEFILTERS('Canal')) > 0
+			    )
+			VAR _serie =
+			    ADDCOLUMNS(
+			        _meses,
+			        "@i", VAR _actual = 'Fecha'[Año mes] RETURN COUNTROWS(FILTER(_meses, 'Fecha'[Año mes] <= _actual)),
+			        "@v", COALESCE(CALCULATE([Activados]), 0)
+			    )
+			VAR _n = COUNTROWS(_serie)
+			VAR _max = MAXX(_serie, [@v])
+			VAR _puntos =
+			    CONCATENATEX(
+			        _serie,
+			        FORMAT(([@i] - 1) / (_n - 1) * 96 + 2, "0.0", "en-US") & "," & FORMAT(30 - DIVIDE([@v], _max) * 26, "0.0", "en-US"),
+			        " ",
+			        [@i], ASC
+			    )
+			RETURN
+			    IF(
+			        _n > 1 && _max > 0,
+			        "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 32' preserveAspectRatio='none'>"
+			            & "<polyline fill='none' stroke='%23F28C28' stroke-width='2' stroke-linejoin='round' points='" & _puntos & "'/></svg>"
+			    )
+		displayFolder: Diseño
+		lineageTag: 33bf4926-3f06-496b-8abc-7049830e7854
+		dataCategory: ImageUrl
+
 	/// Día de la primera visita.
 	column Fecha
 		dataType: dateTime

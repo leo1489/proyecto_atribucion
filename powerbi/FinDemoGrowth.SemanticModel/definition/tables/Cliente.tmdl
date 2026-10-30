@@ -27,6 +27,43 @@ table Cliente
 		formatString: $#,##0
 		lineageTag: 64e98c70-34ff-448b-b425-2a1420524821
 
+	/// Naranja si el canal no se paga en 12 meses (LTV/CAC < 1), azul marino si sí.
+	measure 'Color LTV/CAC' = IF([LTV 12 meses / CAC] < 1, "#F28C28", "#0E2841")
+		displayFolder: Diseño
+		lineageTag: 07bf338c-3bad-4fc7-8d4f-b4428255dfef
+
+	/// Texto de contexto para la tarjeta de LTV/CAC.
+	measure 'Contexto LTV/CAC' = "Ingreso 12 meses: " & SUBSTITUTE(FORMAT([Ingreso 12 meses promedio], "$#,0"), ",", ".")
+		displayFolder: Diseño
+		lineageTag: 35cf3ece-e89d-41ce-a2e6-627cf986e294
+
+	/// Texto de contexto para la tarjeta de churn.
+	measure 'Contexto churn' = "Retención mes 3: " & SUBSTITUTE(FORMAT([Retención mes 3], "0.0%"), ".", ",")
+		displayFolder: Diseño
+		lineageTag: ec5eaa60-2715-45a1-829d-40dd817327ac
+
+	/// Clientes activados en el segmento RFM Campeones.
+	measure 'Clientes campeones' = CALCULATE([Clientes], KEEPFILTERS('Cliente'[Segmento RFM] = "Campeones"))
+		formatString: #,##0
+		displayFolder: Segmentos
+		lineageTag: d8a097b2-bdc7-44aa-9eae-4e69b83c81bd
+
+	/// Clientes activados en los segmentos En riesgo o Hibernando.
+	measure 'Clientes en riesgo' = CALCULATE([Clientes], KEEPFILTERS('Cliente'[Segmento RFM] IN {"En riesgo", "Hibernando"}))
+		formatString: #,##0
+		displayFolder: Segmentos
+		lineageTag: 798ca2b0-27f1-4b65-a325-5546032bd6a3
+
+	/// Texto de contexto para la tarjeta de clientes.
+	measure 'Contexto clientes' = FORMAT(DIVIDE([Clientes campeones], [Clientes]), "0%") & " son Campeones"
+		displayFolder: Diseño
+		lineageTag: 27fe01c6-963d-4630-9c4f-633659355d12
+
+	/// Texto de contexto para la tarjeta de clientes en riesgo.
+	measure 'Contexto en riesgo' = FORMAT(DIVIDE([Clientes en riesgo], [Clientes]), "0%") & " de la base activa"
+		displayFolder: Diseño
+		lineageTag: 6ddcb938-b51c-477e-8897-e16cb477b566
+
 	/// Identificador del usuario en la app (llave).
 	column 'Cliente ID'
 		dataType: string
